@@ -116,7 +116,7 @@ export default function FloatingChatButton() {
   // Luôn lấy cả hai loại chat, vì shop cũng có thể chat với shop khác với tư cách người dùng
   useEffect(() => {
     if (isOpen && isSignedIn) {
-      console.log('Chat opened by user action, fetching data...');
+      // console.log('Chat opened by user action, fetching data...');
       // Luôn fetch user chats
       refetchUserChats();
       
@@ -176,7 +176,7 @@ export default function FloatingChatButton() {
 
     // Thêm event listener ngay cả khi không có selectedChat để lắng nghe tất cả tin nhắn mới
     const handleNewMessage = (data: { chat_id: string }) => {
-      console.log("New message received:", data);
+      // console.log("New message received:", data);
       
       // Cập nhật danh sách chat khi có tin nhắn mới
       refetchUserChats();
@@ -207,9 +207,9 @@ export default function FloatingChatButton() {
 
   // Set up the chat created handler - chỉ set up handler, không tự động mở chat
   useEffect(() => {
-    console.log('Setting up chat created handler');
+    // console.log('Setting up chat created handler');
     setHandleChatCreated((chatId: string) => {
-      console.log('Chat created handler called with chatId:', chatId);
+      // console.log('Chat created handler called with chatId:', chatId);
       // Set selected chat
       setSelectedChat(chatId);
       // Refetch để cập nhật danh sách chat
@@ -228,12 +228,12 @@ export default function FloatingChatButton() {
       });
       return;
     }
-    console.log('Opening chat from button click');
+    // console.log('Opening chat from button click');
     setIsOpen(true);
   };
 
   const handleClose = () => {
-    console.log('Closing chat');
+    // console.log('Closing chat');
     setIsOpen(false);
     setSelectedChat(null);
   };
@@ -379,16 +379,16 @@ export default function FloatingChatButton() {
             : chat.shop?.logo || "/logo/avt-capy.png";
 
           // Thêm debug log để kiểm tra vai trò
-          console.log(`Chat ${chat.chat_id}:`, {
-            userName: chat.user?.user_name,
-            userId: chat.id_user,
-            shopName: chat.shop?.shop_name,
-            shopId: chat.shop_id,
-            currentUserShopId: shopId,
-            isCurrentUserShopOwner,
-            displayingAs: isCurrentUserShopOwner ? 'shop' : 'user',
-            chatName
-          });
+          // console.log(`Chat ${chat.chat_id}:`, {
+          //   userName: chat.user?.user_name,
+          //   userId: chat.id_user,
+          //   shopName: chat.shop?.shop_name,
+          //   shopId: chat.shop_id,
+          //   currentUserShopId: shopId,
+          //   isCurrentUserShopOwner,
+          //   displayingAs: isCurrentUserShopOwner ? 'shop' : 'user',
+          //   chatName
+          // });
 
           return (
             <ListItem

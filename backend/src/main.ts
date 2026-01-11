@@ -9,6 +9,7 @@ const corsOptions: CorsOptions = {
   origin: [
     'https://vaashop.vercel.app',
     'https://vaashop.io.vn',
+    'http://localhost:3000',
   ],
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
   allowedHeaders:

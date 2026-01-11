@@ -27,6 +27,7 @@ import { VoucherStorageModule } from './voucher-storage/voucher-storage.module';
 import { ChatModule } from './chat/chat.module';
 import { PaymentModule } from './payment/payment.module';
 import { ReviewModule } from './review/review.module';
+import { PrometheusModule } from './prometheus/prometheus.module';
 
 @Module({
   imports: [
@@ -63,6 +64,7 @@ import { ReviewModule } from './review/review.module';
     ChatModule,
     PaymentModule,
     ReviewModule,
+    PrometheusModule,
   ],
   controllers: [AppController],
   providers: [AppService],
