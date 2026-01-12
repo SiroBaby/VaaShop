@@ -1,9 +1,15 @@
-import { Module } from '@nestjs/common';
+import { Module, MiddlewareConsumer } from '@nestjs/common';
 import { PrometheusService } from './prometheus.service';
 import { PrometheusController } from './prometheus.controller';
+import { PrometheusMiddleware } from './prometheus.middleware';
 
 @Module({
-  controllers: [PrometheusController],
   providers: [PrometheusService],
+  controllers: [PrometheusController],
+  exports: [PrometheusService],
 })
-export class PrometheusModule {}
+export class PrometheusModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(PrometheusMiddleware).forRoutes('*');
+  }
+}
