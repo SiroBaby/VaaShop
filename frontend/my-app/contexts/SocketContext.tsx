@@ -32,7 +32,7 @@ export const SocketProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => {
     if (!isSignedIn || !user) return;
 
-    const socketInstance = io('https://www.vaashop.io.vn', {
+    const socketInstance = io('https://vaashop.io.vn', {
       withCredentials: true,
       autoConnect: true,
       reconnection: true,
