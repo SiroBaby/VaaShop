@@ -8,7 +8,7 @@ export const FloatingChatBotButton = () => {
 	useEffect(() => {
 		// Tạo chatbot
 		createChat({
-			webhookUrl: 'https://sirobabycloud.io.vn/webhook/ac4b05d0-f698-4aed-9b2b-a5c7f06e13d0/chat',
+			webhookUrl: 'https://n8n.sirobabycloud.io.vn/webhook/ac4b05d0-f698-4aed-9b2b-a5c7f06e13d0/chat',
             initialMessages: [
                 'Xin chào! 👋',
                 'Tôi có thể giúp gì cho bạn?'

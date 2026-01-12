@@ -28,6 +28,7 @@ import { ChatModule } from './chat/chat.module';
 import { PaymentModule } from './payment/payment.module';
 import { ReviewModule } from './review/review.module';
 import { PrometheusModule } from './prometheus/prometheus.module';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -65,6 +66,7 @@ import { PrometheusModule } from './prometheus/prometheus.module';
     PaymentModule,
     ReviewModule,
     PrometheusModule,
+    HealthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
