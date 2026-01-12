@@ -1,0 +1,136 @@
+name: Build & Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+env:
+  REGISTRY: docker.io
+  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/vaashop-backend
+  CONTAINER_NAME: vaashop-backend
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
+            WEBHOOK_SECRET=${{ secrets.WEBHOOK_SECRET }}
+            CLOUDINARY_SECRET=${{ secrets.CLOUDINARY_SECRET }}
+            VNPAY_TMN_CODE=${{ secrets.VNPAY_TMN_CODE }}
+            VNPAY_HASH_SECRET=${{ secrets.VNPAY_HASH_SECRET }}
+            VNPAY_URL=${{ secrets.VNPAY_URL }}
+            VNPAY_RETURN_URL=${{ secrets.VNPAY_RETURN_URL }}
+            CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }}
+            FRONTEND_URL=${{ secrets.FRONTEND_URL }}
+            NODE_ENV=production
+
+      - name: Image digest
+        run: echo ${{ steps.docker_build.outputs.digest }}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -p ${{ secrets.VPS_SSH_PORT }} ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Deploy to VPS
+        run: |
+          ssh -i ~/.ssh/deploy_key -p ${{ secrets.VPS_SSH_PORT }} ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+            set -e
+            
+            echo "🔄 Pulling latest image from Docker Hub..."
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            
+            echo "🛑 Stopping old container..."
+            docker stop ${{ env.CONTAINER_NAME }} || true
+            docker rm ${{ env.CONTAINER_NAME }} || true
+            
+            echo "🚀 Starting new container..."
+            docker run -d \
+              -p 3301:3301 \
+              -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+              -e WEBHOOK_SECRET="${{ secrets.WEBHOOK_SECRET }}" \
+              -e CLOUDINARY_SECRET="${{ secrets.CLOUDINARY_SECRET }}" \
+              -e VNPAY_TMN_CODE="${{ secrets.VNPAY_TMN_CODE }}" \
+              -e VNPAY_HASH_SECRET="${{ secrets.VNPAY_HASH_SECRET }}" \
+              -e VNPAY_URL="${{ secrets.VNPAY_URL }}" \
+              -e VNPAY_RETURN_URL="${{ secrets.VNPAY_RETURN_URL }}" \
+              -e CLERK_SECRET_KEY="${{ secrets.CLERK_SECRET_KEY }}" \
+              -e FRONTEND_URL="${{ secrets.FRONTEND_URL }}" \
+              -e NODE_ENV=production \
+              --restart unless-stopped \
+              --name ${{ env.CONTAINER_NAME }} \
+              --log-driver json-file \
+              --log-opt max-size=10m \
+              --log-opt max-file=5 \
+              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            
+            echo "✅ Deployment completed successfully!"
+            echo "Container status:"
+            docker ps | grep ${{ env.CONTAINER_NAME }}
+            
+            echo "🔍 Checking application health..."
+            sleep 5
+            curl -s http://localhost:3301/health | jq . || echo "Health check pending..."
+          EOF
+
+      - name: Deployment notification
+        if: success()
+        run: echo "✅ Successfully deployed to VPS"
+
+      - name: Deployment failed notification
+        if: failure()
+        run: echo "❌ Deployment failed"
