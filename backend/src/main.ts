@@ -46,7 +46,7 @@ async function bootstrap() {
 // Local development
 if (require.main === module) {
   bootstrap().then(app => {
-    app.listen(process.env.PORT ?? 3302);
+    app.listen(process.env.PORT ?? 3301);
     console.log(`Application is running on port ${process.env.PORT ?? 3301}`);
   });
 }
