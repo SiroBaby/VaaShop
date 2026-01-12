@@ -100,7 +100,7 @@ jobs:
             
             echo "🚀 Starting new container..."
             docker run -d \
-              -p 127.0.0.1:3301 \
+              -p 127.0.0.1:3301:3301 \
               -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
               -e WEBHOOK_SECRET="${{ secrets.WEBHOOK_SECRET }}" \
               -e CLOUDINARY_SECRET="${{ secrets.CLOUDINARY_SECRET }}" \
