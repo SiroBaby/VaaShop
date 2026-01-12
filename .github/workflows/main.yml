@@ -40,8 +40,6 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=ref,event=branch
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
             type=sha,prefix={{branch}}-
             type=raw,value=latest,enable={{is_default_branch}}
 
@@ -56,19 +54,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            DATABASE_URL=${{ secrets.DATABASE_URL }}
-            WEBHOOK_SECRET=${{ secrets.WEBHOOK_SECRET }}
-            CLOUDINARY_SECRET=${{ secrets.CLOUDINARY_SECRET }}
-            VNPAY_TMN_CODE=${{ secrets.VNPAY_TMN_CODE }}
-            VNPAY_HASH_SECRET=${{ secrets.VNPAY_HASH_SECRET }}
-            VNPAY_URL=${{ secrets.VNPAY_URL }}
-            VNPAY_RETURN_URL=${{ secrets.VNPAY_RETURN_URL }}
-            CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }}
-            FRONTEND_URL=${{ secrets.FRONTEND_URL }}
             NODE_ENV=production
-
-      - name: Image digest
-        run: echo ${{ steps.docker_build.outputs.digest }}
 
   deploy:
     needs: build
@@ -76,9 +62,6 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
       - name: Setup SSH key
         run: |
           mkdir -p ~/.ssh
@@ -88,16 +71,17 @@ jobs:
 
       - name: Deploy to VPS
         run: |
-          ssh -i ~/.ssh/deploy_key -p ${{ secrets.VPS_SSH_PORT }} ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+          ssh -i ~/.ssh/deploy_key -p ${{ secrets.VPS_SSH_PORT }} \
+          ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
             set -e
-            
-            echo "🔄 Pulling latest image from Docker Hub..."
+
+            echo "🔄 Pulling latest image..."
             docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-            
+
             echo "🛑 Stopping old container..."
             docker stop ${{ env.CONTAINER_NAME }} || true
             docker rm ${{ env.CONTAINER_NAME }} || true
-            
+
             echo "🚀 Starting new container..."
             docker run -d \
               -p 127.0.0.1:3301:3301 \
@@ -117,14 +101,13 @@ jobs:
               --log-opt max-size=10m \
               --log-opt max-file=5 \
               ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-            
-            echo "✅ Deployment completed successfully!"
-            echo "Container status:"
+
+            echo "✅ Deployment completed"
             docker ps | grep ${{ env.CONTAINER_NAME }}
-            
-            echo "🔍 Checking application health..."
+
+            echo "🔍 Health check..."
             sleep 5
-            curl -s http://localhost:3301/health | jq . || echo "Health check pending..."
+            curl -s http://localhost:3301/health || echo "Health check not ready"
           EOF
 
       - name: Deployment notification
