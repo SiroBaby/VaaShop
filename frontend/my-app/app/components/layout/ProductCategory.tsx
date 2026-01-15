@@ -102,151 +102,68 @@ const ProductCategory = () => {
   }
 
   return (
-    <div className="container mx-auto p-4">
-      {/* Navbar for mobile */}
-      <nav className="bg-white border-gray-200 dark:bg-gray-900 md:hidden">
-        <div className="max-w-screen-xl flex items-center justify-between mx-auto p-4">
-          <button
-            onClick={toggleDropdown}
-            type="button"
-            className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-btext-black"
-            aria-controls="navbar-default"
-          >
-            <span className="sr-only">Open main menu</span>
-            <svg
-              className="w-5 h-5"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 17 14"
-            >
-              <path
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M1 1h15M1 7h15M1 13h15"
-              />
-            </svg>
-          </button>
-        </div>
-      </nav>
-
-      <div className="rounded-lg p-4">
-        <div className="text-center md:text-left">
-          <h2 className="text-xl font-semibold mb-4 hidden md:block">
-            Danh mục
-          </h2>
-        </div>
-
-        {/* Categories section */}
-        <section
-          id="navbar-default"
-          className={`${isOpen ? "block" : "hidden"} md:block`}
+    <div className="w-full">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-bold bg-clip-text text-transparent bg-brand-gradient">
+          Danh mục sản phẩm
+        </h2>
+        <button 
+          onClick={toggleDropdown}
+          className="text-sm text-gray-500 hover:text-brand-start transition-colors md:hidden"
         >
-          <div className="flex flex-col items-center md:flex-row md:flex-wrap md:justify-between">
-            {categories.length > 0 ? (
-              // Display categories from the API
-              categories.map((category) => (
-                <div
-                  key={category.category_id}
-                  className="flex flex-col items-center mb-4 md:mb-6 md:mx-4 cursor-pointer hover:opacity-80 transition-opacity p-2 rounded-lg hover:bg-gray-50"
-                  onClick={() =>
-                    navigateToCategory(
-                      category.category_id,
-                      category.category_name
-                    )
-                  }
-                >
-                  <div className="relative w-12 h-12 mb-2">
+          {isOpen ? "Thu gọn" : "Xem tất cả"}
+        </button>
+      </div>
+
+      <div className={`
+        ${isOpen ? "grid grid-cols-2 gap-4" : "flex overflow-x-auto pb-4 gap-4 snap-x"} 
+        md:grid md:grid-cols-7 md:gap-6 md:pb-0 scrollbar-hide
+      `}>
+        {categories.length > 0 ? (
+          categories.map((category) => (
+            <div
+              key={category.category_id}
+              onClick={() => navigateToCategory(category.category_id, category.category_name)}
+              className="flex-shrink-0 snap-center flex flex-col items-center group cursor-pointer w-[100px] md:w-auto"
+            >
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-gray-50 flex items-center justify-center mb-3 group-hover:bg-brand-gradient group-hover:shadow-lg group-hover:scale-105 transition-all duration-300 relative overflow-hidden border border-gray-100 group-hover:border-transparent">
+                 <div className="relative w-10 h-10 md:w-12 md:h-12 transition-transform duration-300 group-hover:scale-110 group-hover:brightness-0 group-hover:invert">
                     <Image
                       src={categoryIcons[category.category_name] || defaultIcon}
                       fill
-                      className="object-contain"
+                      className="object-contain p-1"
                       alt={category.category_name}
                     />
-                  </div>
-                  <p className="text-center text-black font-medium">
-                    {category.category_name}
-                  </p>
-                </div>
-              ))
-            ) : (
-              // Fallback to default categories if API returns no data
-              <>
-                <div className="flex flex-col items-center mb-4 md:mb-6 md:mx-4 cursor-pointer">
-                  <Image
-                    src="/icon/brand.png"
-                    width={40}
-                    height={40}
-                    alt="Quần áo"
-                  />
-                  <p className="text-center text-black">Quần áo</p>
-                </div>
-
-                <div className="flex flex-col items-center mb-4 md:mb-6 md:mx-4 cursor-pointer">
-                  <Image
-                    src="/icon/shoes.png"
-                    width={40}
-                    height={40}
-                    alt="Giày dép"
-                  />
-                  <p className="text-center text-black">Giày dép</p>
-                </div>
-
-                <div className="flex flex-col items-center mb-4 md:mb-6 md:mx-4 cursor-pointer">
-                  <Image
-                    src="/icon/hand-watch.png"
-                    width={40}
-                    height={40}
-                    alt="Đồng hồ"
-                  />
-                  <p className="text-center text-black">Đồng hồ</p>
-                </div>
-
-                <div className="flex flex-col items-center mb-4 md:mb-6 md:mx-4 cursor-pointer">
-                  <Image
-                    src="/icon/iphone.png"
-                    width={40}
-                    height={40}
-                    alt="Điện thoại"
-                  />
-                  <p className="text-center text-black">Điện thoại</p>
-                </div>
-
-                <div className="flex flex-col items-center mb-4 md:mb-6 md:mx-4 cursor-pointer">
-                  <Image
-                    src="/icon/keyboard.png"
-                    width={40}
-                    height={40}
-                    alt="Máy tính & laptop"
-                  />
-                  <p className="text-center text-black">Máy tính & laptop</p>
-                </div>
-
-                <div className="flex flex-col items-center mb-4 md:mb-6 md:mx-4 cursor-pointer">
-                  <Image
-                    src="/icon/keyboard.png"
-                    width={40}
-                    height={40}
-                    alt="Phụ kiện máy tính"
-                  />
-                  <p className="text-center text-black">Phụ kiện máy tính</p>
-                </div>
-
-                <div className="flex flex-col items-center mb-4 md:mb-6 md:mx-4 cursor-pointer">
-                  <Image
-                    src="/icon/ram-memory.png"
-                    width={40}
-                    height={40}
-                    alt="Linh kiện điện tử"
-                  />
-                  <p className="text-center text-black">Linh kiện điện tử</p>
-                </div>
-              </>
-            )}
-          </div>
-        </section>
+                 </div>
+              </div>
+              <p className="text-center text-sm font-medium text-gray-600 group-hover:text-brand-start transition-colors line-clamp-2 px-1">
+                {category.category_name}
+              </p>
+            </div>
+          ))
+        ) : (
+          // Fallback static data rewritten to match structure
+          Object.keys(categoryIcons).slice(0, 7).map((name, index) => (
+             <div
+              key={index}
+              className="flex-shrink-0 snap-center flex flex-col items-center group cursor-pointer w-[100px] md:w-auto"
+            >
+              <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-gray-50 flex items-center justify-center mb-3 group-hover:bg-brand-gradient group-hover:shadow-lg group-hover:scale-105 transition-all duration-300 relative overflow-hidden border border-gray-100 group-hover:border-transparent">
+                 <div className="relative w-10 h-10 md:w-12 md:h-12 transition-transform duration-300 group-hover:scale-110 group-hover:brightness-0 group-hover:invert">
+                    <Image
+                      src={categoryIcons[name]}
+                      fill
+                      className="object-contain p-1"
+                      alt={name}
+                    />
+                 </div>
+              </div>
+              <p className="text-center text-sm font-medium text-gray-600 group-hover:text-brand-start transition-colors line-clamp-2 px-1">
+                {name}
+              </p>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

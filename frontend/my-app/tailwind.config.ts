@@ -9,6 +9,10 @@ const config: Config = {
   ],
   darkMode: "class",
   theme: {
+    container: {
+      center: true,
+      padding: "1rem",
+    },
     extend: {
       colors: {
         background: "var(--background)",
@@ -29,12 +33,23 @@ const config: Config = {
         button: "#1FBFEB",
         "button-shopping": "#1FBFEB",
         "button-loc": "#F9F871",
+        // Semantic Colors for Redesign
+        brand: {
+          start: "#00D2E4",
+          end: "#00E3CD",
+          DEFAULT: "#00D2E4", // Fallback
+        },
+        surface: {
+          DEFAULT: "#FFFFFF",
+          subtle: "#F8FAFC", // Slate-50 like
+        }
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--gradient-stops))",
         "gradient-conic": "conic-gradient(var(--gradient-stops))",
         "gradient-to-tr":
           "linear-gradient(to top right, var(--tw-gradient-stops))",
+        "brand-gradient": "linear-gradient(135deg, #00D2E4 0%, #00E3CD 100%)",
       },
     },
   },

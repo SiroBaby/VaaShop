@@ -2,9 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { UserButton } from "@clerk/nextjs";
-import { useUser } from "@clerk/nextjs";
-import { useAuth } from "@clerk/nextjs";
+import { UserButton, useUser, useAuth } from "@clerk/nextjs";
 import { useApolloClient, useLazyQuery } from "@apollo/client";
 import {
   GET_CART,
@@ -13,6 +11,7 @@ import {
   GET_USER_BY_ID,
 } from "@/graphql/queries";
 import { debounce } from "lodash";
+import { Search, ShoppingCart, Bell, Menu, Globe, HelpCircle, Store } from "lucide-react";
 
 interface Product {
   product_id: number;
@@ -47,18 +46,16 @@ const AnotherTopBar = () => {
 
   const [executeSearch, { loading }] = useLazyQuery(GET_PRODUCTS);
 
-  // Đánh dấu đã render
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Cập nhật tên người dùng
   useEffect(() => {
     if (user) {
       setUserName(`${user.firstName} ${user.lastName}`);
     }
   }, [user]);
-  // xử lý khi click vào kênh người bán
+
   const handleClickSellerChennel = async () => {
     if (userId) {
       try {
@@ -82,7 +79,6 @@ const AnotherTopBar = () => {
     }
   };
 
-  // Xử lý click outside để đóng suggestions
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -97,19 +93,17 @@ const AnotherTopBar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Debounced search function with 900ms delay
   const debouncedSearch = debounce(async (term: string) => {
     if (term.length >= 2) {
       try {
         const { data } = await executeSearch({
           variables: {
             page: 1,
-            limit: 10, // Tăng limit để có nhiều kết quả hơn để lọc
+            limit: 10,
             search: term,
           },
         });
 
-        // Lọc các sản phẩm không trùng tên và chỉ lấy 5 kết quả đầu tiên
         const uniqueProducts =
           data?.products?.data
             ?.filter(
@@ -130,16 +124,14 @@ const AnotherTopBar = () => {
       setSuggestions([]);
       setShowSuggestions(false);
     }
-  }, 900); // Tăng thời gian debounce lên 900ms
+  }, 900);
 
-  // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const term = e.target.value;
     setSearchTerm(term);
     debouncedSearch(term);
   };
 
-  // Handle search submit
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchTerm.trim()) {
@@ -149,7 +141,6 @@ const AnotherTopBar = () => {
     }
   };
 
-  // Handle suggestion click
   const handleSuggestionClick = (product: Product) => {
     router.push(
       `/customer/category/product?search=${encodeURIComponent(
@@ -161,7 +152,6 @@ const AnotherTopBar = () => {
     setSuggestions([]);
   };
 
-  // Xử lý khi click vào nút giỏ hàng
   const handleCartClick = async () => {
     if (userId) {
       try {
@@ -191,117 +181,121 @@ const AnotherTopBar = () => {
     }
   };
 
-  // Tránh lỗi hydration
   if (!mounted) {
     return null;
   }
 
   return (
-    <div className="bg-gradient-to-tr from-left-anothertopbar to-right-anothertopbar pt-2">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between">
-          <div className="flex space-x-6">
+    <div className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-md shadow-sm border-b border-gray-100 transition-all duration-300">
+      <div className="mx-auto px-4 sm:px-6 lg:px-8 py-3 w-full md:max-w-[768px] lg:max-w-[1024px] xl:max-w-[1280px] 2xl:max-w-[1536px]">
+        <div className="flex items-center justify-between gap-4">
+          
+          {/* Left: Logo & Seller Channel - Flex-1 to push center items */}
+          <div className="flex-1 flex items-center justify-start gap-4 xl:gap-8 min-w-0">
+            <div 
+              className="flex-shrink-0 cursor-pointer transition-transform hover:scale-105"
+              onClick={() => router.push("/")}
+            >
+              <Image
+                src="/logo/logodemo.png"
+                width={120}
+                height={35}
+                alt="VaaShop"
+                className="object-contain h-9 w-auto"
+                priority
+              />
+            </div>
+            
             <span
               onClick={handleClickSellerChennel}
-              className="text-white cursor-pointer"
+              className="cursor-pointer text-sm font-medium text-gray-600 hover:text-brand-start transition-colors whitespace-nowrap hidden xl:block truncate"
             >
-              Kênh người bán
+              Kênh Người Bán
             </span>
           </div>
-          <div className="flex items-center space-x-4">
-            {user && (
-              <div className="flex items-center gap-3">
-                <UserButton />
-                <span
-                  className="text-white font-bold shadow-text cursor-pointer"
-                  onClick={() =>
-                    router.push(`/customer/user/profile/${userId}`)
-                  }
-                >
-                  Hi, {userName}
-                </span>
-              </div>
-            )}
-            {!user && (
-              <span
-                className="text-white cursor-pointer"
-                onClick={() => router.push("/sign-in")}
-              >
-                Đăng nhập
-              </span>
-            )}
-          </div>
-        </div>
 
-        <div className="flex items-center justify-between mt-2">
-          <div className="font-bold text-white cursor-pointer">
-            <Image
-              onClick={() => router.push("/")}
-              src="/logo/logodemo.png"
-              width={120}
-              height={0}
-              alt="logo"
-            />
-          </div>
-
-          <div className="flex justify-center flex-grow mx-4">
-            <div className="relative w-4/6" ref={searchRef}>
-              <form onSubmit={handleSearchSubmit}>
+          {/* Center: Search Bar - Fixed max-width, strictly centered */}
+          <div className="w-full max-w-3xl px-4 shrink-0" ref={searchRef}>
+            <form onSubmit={handleSearchSubmit} className="relative group w-full">
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-brand-start transition-colors" />
                 <input
                   type="text"
-                  className="w-full bg-white rounded-full pl-10 pr-10 h-10 border-none outline-none shadow-md"
-                  placeholder="Tìm kiếm..."
+                  className="w-full bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-full pl-10 pr-10 py-2.5 outline-none transition-all duration-300 focus:bg-white focus:border-brand-start focus:ring-1 focus:ring-brand-start/50 focus:shadow-md placeholder:text-gray-400"
+                  placeholder="Tìm kiếm sản phẩm, thương hiệu..."
                   value={searchTerm}
                   onChange={handleSearchChange}
                 />
-                <button
+                <button 
                   type="submit"
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                  title="Tìm kiếm"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 bg-brand-gradient rounded-full text-white shadow-sm hover:shadow-md hover:scale-105 transition-all"
                 >
-                  <Image
-                    src="/icon/search.png"
-                    width={20}
-                    height={20}
-                    alt="search"
-                  />
+                  <Search className="w-3.5 h-3.5" />
                 </button>
-              </form>
+              </div>
+            </form>
 
-              {/* Suggestions dropdown */}
-              {showSuggestions && suggestions.length > 0 && (
-                <div className="absolute w-full mt-1 bg-white rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
-                  {loading ? (
-                    <div className="p-4 text-center">Đang tải...</div>
-                  ) : (
-                    suggestions.map((product) => (
+            {/* Suggestions dropdown */}
+            {showSuggestions && suggestions.length > 0 && (
+              <div className="absolute left-0 right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-100 overflow-hidden z-[60] animate-in fade-in zoom-in-95 duration-200">
+                {loading ? (
+                  <div className="p-4 text-center text-gray-500 text-sm">Đang tải...</div>
+                ) : (
+                  <div>
+                     <div className="px-4 py-2 bg-gray-50 text-xs font-semibold text-gray-500 border-b border-gray-100">
+                      Gợi ý
+                    </div>
+                    {suggestions.map((product) => (
                       <div
                         key={product.product_id}
-                        className="p-3 hover:bg-gray-100 cursor-pointer flex items-center"
+                        className="px-4 py-2.5 hover:bg-surface-subtle cursor-pointer flex items-center justify-between group transition-colors"
                         onClick={() => handleSuggestionClick(product)}
                       >
-                        <div>
-                          <div className="font-medium text-gray-800">
-                            {product.product_name}
-                          </div>
-                        </div>
+                         <div className="font-medium text-gray-700 group-hover:text-brand-start text-sm truncate">
+                           {product.product_name}
+                         </div>
                       </div>
-                    ))
-                  )}
-                </div>
-              )}
-            </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
-          <button className="p-2 rounded-full" aria-label="shopping">
-            <Image
-              src="/icon/shopping.png"
-              width={30}
-              height={30}
-              alt="shopping"
-              onClick={handleCartClick}
-            />
-          </button>
+          {/* Right: Actions & User - Flex-1 to balance Left */}
+          <div className="flex-1 flex items-center justify-end gap-3 min-w-0">
+             {user ? (
+                <div className="flex items-center gap-2 justify-end">
+                  <span 
+                    className="font-semibold text-sm cursor-pointer truncate max-w-[120px] hidden lg:block hover:text-brand-start text-right"
+                    onClick={() => router.push(`/customer/user/profile/${userId}`)}
+                  >
+                    {userName}
+                  </span>
+                   <UserButton afterSignOutUrl="/"/>
+                </div>
+             ) : (
+               <div className="flex items-center gap-3 text-sm font-medium justify-end">
+                 <button onClick={() => router.push("/sign-in")} className="hover:text-brand-start whitespace-nowrap">
+                   Đăng nhập
+                 </button>
+                 <span className="text-gray-300">/</span>
+                 <button onClick={() => router.push("/sign-up")} className="hover:text-brand-start whitespace-nowrap">
+                   Đăng ký
+                 </button>
+               </div>
+             )}
+
+            <div className="h-6 w-px bg-gray-200 mx-2"></div>
+
+            <button 
+               className="p-2.5 text-gray-600 hover:text-brand-start hover:bg-gray-50 rounded-full transition-all relative group"
+               aria-label="Giỏ hàng"
+               onClick={handleCartClick}
+            >
+               <ShoppingCart className="w-5 h-5" />
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -34,9 +34,7 @@ export default function CustomerLayout({
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
-      <div className="pb-1">
-        <AnotherTopBar />
-      </div>
+      <AnotherTopBar />
 
       <div className="pb-2">{children}</div>
 

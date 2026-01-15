@@ -45,71 +45,52 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     fallbackImageUrl;
 
   return (
-    <Link href={`/customer/details/product/${product.product_id}`}>
+    <Link href={`/customer/details/product/${product.product_id}`} className="block h-full">
       <div
-        className="bg-white rounded-lg shadow-md overflow-hidden h-[350px] transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-105"
+        className="group relative bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden h-full flex flex-col transition-all duration-300 hover:shadow-lg hover:-translate-y-1 hover:border-brand/30"
         onMouseLeave={() => {
           setIsButtonPressed(false);
         }}
       >
-        <div className="relative h-[240px] bg-white">
+        <div className="relative aspect-[1/1] w-full bg-gray-50 overflow-hidden">
           <Image
             src={imageUrl}
             fill
             alt={product.product_name || "Product image"}
-            className="object-contain"
+            className="object-cover transition-transform duration-500 group-hover:scale-110"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
           />
+          {discountPercent > 0 && (
+            <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-md shadow-md">
+              -{Math.round(discountPercent * 100)}%
+            </div>
+          )}
         </div>
 
-        <div className="relative p-3 h-[150px]">
-          <p className="text-gray-800 font-medium truncate">
+        <div className="p-4 flex flex-col flex-grow">
+          <h3 className="text-gray-800 font-medium text-sm line-clamp-2 mb-2 min-h-[2.5rem] group-hover:text-brand-end transition-colors">
             {product.product_name}
-          </p>
-          {discountPercent > 0 ? (
-            <div className="flex flex-col mt-2">
-              <div className="flex items-center gap-2">
-                <p className="text-gray-500 line-through text-sm">
-                  {originalPrice?.toLocaleString()} VNĐ
+          </h3>
+          
+          <div className="mt-auto">
+            {discountPercent > 0 ? (
+              <div className="flex flex-col">
+                <p className="text-gray-400 line-through text-xs mb-0.5">
+                  {originalPrice?.toLocaleString()} ₫
                 </p>
-                <p className="text-white rounded-full bg-red-500 px-2 py-1">
-                  {discountPercent * 100}%
+                <p className="text-brand-start font-bold text-lg">
+                  {(
+                    (originalPrice || 0) -
+                    (originalPrice || 0) * discountPercent
+                  ).toLocaleString()} <span className="text-xs">₫</span>
                 </p>
               </div>
-              <p className="text-blue-500 font-bold">
-                {(
-                  (originalPrice || 0) -
-                  (originalPrice || 0) * discountPercent
-                ).toLocaleString()}{" "}
-                VNĐ
+            ) : (
+              <p className="text-brand-start font-bold text-lg">
+                {originalPrice?.toLocaleString()} <span className="text-xs">₫</span>
               </p>
-            </div>
-          ) : (
-            <p className="text-blue-500 font-bold mt-2">
-              {originalPrice?.toLocaleString()} VNĐ
-            </p>
-          )}
-
-          {/* <button
-            className={`absolute bottom-3 right-3 bg-button-shopping rounded-full p-3
-                      transition-all duration-200 ease-in-out
-                      ${
-                        isButtonPressed
-                          ? "scale-90 shadow-inner"
-                          : "hover:scale-110 hover:shadow-lg"
-                      }`}
-            aria-label="Thêm vào giỏ hàng"
-            onMouseDown={() => setIsButtonPressed(true)}
-            onMouseUp={() => setIsButtonPressed(false)}
-            onMouseLeave={() => setIsButtonPressed(false)}
-          >
-            <Image
-              src="/icon/shopping-b.png"
-              width={30}
-              height={30}
-              alt="shopping"
-              className="transition-transform duration-200"
-            />
-          </button> */}
+            )}
+          </div>
         </div>
       </div>
     </Link>
